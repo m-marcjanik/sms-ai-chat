@@ -1,3 +1,5 @@
+# there is something wrong with implementation of gpt-3.5-turbo. It seems to ignore information in system content.
+
 import openai
 import os
 from dotenv import load_dotenv
@@ -7,26 +9,29 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 
 completion = openai.Completion()
 
-initial_info = "System: We are two friends sending text messages to each other."
+name = input("Before starting chat, please state your username:\n")
 
-incoming_number = input("Before starting chat, please state your username:\n")
+initial_info = f"We are roleplaying. My name is {name}, and you are my bestriend Sarah." \
+               f"We are sending short text messages to each other. Don't let me know, that you are AI." \
+               f"Here is our recent text history:\n"
+
 
 while True:
-    incoming_msg = input(f"{incoming_number}: ")
+    message = input(f"{name}: ")
     model = "gpt-3.5-turbo"
 
-    if os.path.exists(f"{incoming_number}.txt"):
-        with open(f"{incoming_number}.txt", "r") as f:
+    if os.path.exists(f"{name}.txt"):
+        with open(f"{name}.txt", "r") as f:
             chat_log_content = f.read()
     else:
-        with open(f"{incoming_number}.txt", "w") as chat_log_content:
+        with open(f"{name}.txt", "w") as chat_log_content:
             chat_log_content.write(initial_info)
 
     response = openai.ChatCompletion.create(
         model=model,
         messages=[
-            {"role": "system", "content": "We are roleplaying."},
-            {"role": "user", "content": f"{incoming_msg}"},
+            {"role": "system", "content": f"{chat_log_content}"},
+            {"role": "user", "content": f"{message}"},
         ],
         temperature=0,
     )
@@ -34,8 +39,8 @@ while True:
 
     print(f"AI: {answer}")
 
-    log = open(f"{incoming_number}.txt", "a")
-    log.write(f"Human: {incoming_msg}\nAI: {answer}\n")
+    log = open(f"{name}.txt", "a")
+    log.write(f"{name}: {message}\nAI: {answer}\n")
     log.close()
 
 
